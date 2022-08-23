@@ -290,6 +290,11 @@ function MessageEdit({ body, onSave, onCancel }) {
   }, []);
 
   const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onCancel();
+    }
+
     if (e.key === 'Enter' && e.shiftKey === false) {
       e.preventDefault();
       onSave(editInputRef.current.value);
@@ -709,9 +714,9 @@ function getEditedBody(editedMEvent) {
 }
 
 function Message({
-  mEvent, isBodyOnly, roomTimeline, focus, fullTime,
+  mEvent, isBodyOnly, roomTimeline,
+  focus, fullTime, isEdit, setEdit, cancelEdit,
 }) {
-  const [isEditing, setIsEditing] = useState(false);
   const roomId = mEvent.getRoomId();
   const { editedTimeline, reactionTimeline } = roomTimeline ?? {};
 
@@ -726,7 +731,7 @@ function Message({
   const avatarSrc = mEvent.sender?.getAvatarUrl(initMatrix.matrixClient.baseUrl, 36, 36, 'crop') ?? null;
 
   const edit = useCallback(() => {
-    setIsEditing(true);
+    setEdit(eventId);
   }, []);
   const reply = useCallback(() => {
     replyTo(senderId, mEvent.getId(), body);
@@ -783,7 +788,7 @@ function Message({
             eventId={mEvent.replyEventId}
           />
         )}
-        {!isEditing && (
+        {!isEdit && (
           <MessageBody
             senderName={username}
             isCustomHTML={isCustomHTML}
@@ -792,22 +797,22 @@ function Message({
             isEdited={isEdited}
           />
         )}
-        {isEditing && (
+        {isEdit && (
           <MessageEdit
             body={body}
             onSave={(newBody) => {
               if (newBody !== body) {
                 initMatrix.roomsInput.sendEditedMessage(roomId, mEvent, newBody);
               }
-              setIsEditing(false);
+              cancelEdit();
             }}
-            onCancel={() => setIsEditing(false)}
+            onCancel={cancelEdit}
           />
         )}
         {haveReactions && (
           <MessageReactionGroup roomTimeline={roomTimeline} mEvent={mEvent} />
         )}
-        {roomTimeline && !isEditing && (
+        {roomTimeline && !isEdit && (
           <MessageOptions
             roomTimeline={roomTimeline}
             mEvent={mEvent}
@@ -824,6 +829,9 @@ Message.defaultProps = {
   focus: false,
   roomTimeline: null,
   fullTime: false,
+  isEdit: false,
+  setEdit: null,
+  cancelEdit: null,
 };
 Message.propTypes = {
   mEvent: PropTypes.shape({}).isRequired,
@@ -831,6 +839,9 @@ Message.propTypes = {
   roomTimeline: PropTypes.shape({}),
   focus: PropTypes.bool,
   fullTime: PropTypes.bool,
+  isEdit: PropTypes.bool,
+  setEdit: PropTypes.func,
+  cancelEdit: PropTypes.func,
 };
 
 export { Message, MessageReply, PlaceholderMessage };
