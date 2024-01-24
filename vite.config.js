@@ -5,7 +5,8 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { vanillaExtractPlugin } from "@vanilla-extract/vite-plugin";
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import inject from '@rollup/plugin-inject';
-import { svgLoader } from './viteSvgLoader';
+import { svgLoader } from './viteSvgLoader'
+import buildConfig from "./build.config"
 
 const copyFiles = {
   targets: [
@@ -14,7 +15,11 @@ const copyFiles = {
       dest: '',
     },
     {
-      src: '_redirects',
+      src: 'node_modules/pdfjs-dist/build/pdf.worker.min.js',
+      dest: '',
+    },
+    {
+      src: 'netlify.toml',
       dest: '',
     },
     {
@@ -35,7 +40,7 @@ const copyFiles = {
 export default defineConfig({
   appType: 'spa',
   publicDir: false,
-  base: "",
+  base: buildConfig.base,
   server: {
     port: 8080,
     host: true,
